@@ -106,6 +106,9 @@ public class TransferServiceImpl implements TransferService {
     // Quick sanity check — no point locking wallets or hitting the DB
     // if someone is trying to transfer money to themselves.
     private void validateDifferentWallets(CreateTransferRequest request) {
+        if (request.fromWalletId() == null || request.toWalletId() == null) {
+            throw new InvalidTransferException("Source and destination wallets are required");
+        }
         if (request.fromWalletId().equals(request.toWalletId())) {
             throw new InvalidTransferException("Source and destination wallets must be different");
         }

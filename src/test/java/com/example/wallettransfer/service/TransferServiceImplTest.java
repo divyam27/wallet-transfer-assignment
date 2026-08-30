@@ -129,6 +129,17 @@ class TransferServiceImplTest {
     }
 
     @Test
+    void rejectsTransferWhenSourceWalletIdIsMissingBeforeDatabaseWork() {
+        CreateTransferRequest request = request("key", null, "destination", "1");
+
+        assertThatThrownBy(() -> service.createTransfer(request))
+                .isInstanceOf(InvalidTransferException.class)
+                .hasMessageContaining("required");
+
+        verify(idempotencyLockRepository, never()).lock(any());
+    }
+
+    @Test
     void reportsMissingWalletAfterAcquiringFirstWalletLock() {
         CreateTransferRequest request = request("key", "missing", "present", "1");
         when(idempotencyRecordRepository.findWithTransferByKey("key")).thenReturn(Optional.empty());
