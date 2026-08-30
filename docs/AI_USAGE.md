@@ -34,7 +34,7 @@ I also used Codex to:
 * validate the idempotency and concurrency approach
 * review transaction and database invariants
 * suggest improvements to Spring Boot/JPA implementation
-* assist with database constraints and Flyway migration changes
+* assist with database constraints and Liquibase Changelog changes
 * assist with unit test creation
 * assist with integration and concurrency tests
 * identify possible race conditions and failure scenarios
@@ -57,7 +57,7 @@ The main prompts used during the development session included:
 * `explain and verify how the requestHash should be generated`
 * `help refine the Spring Boot implementation for the transfer workflow`
 * `review repository methods and JPA locking for wallet updates`
-* `review the Flyway migration and database constraints`
+* `review the Liquibase Changelog and database constraints`
 * `review concurrent transfers using SELECT FOR UPDATE`
 * `check deterministic wallet lock ordering and possible deadlock scenarios`
 * `review how two simultaneous transfers from the same wallet should be handled`
