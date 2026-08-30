@@ -4,6 +4,8 @@ A Spring Boot service for reliable wallet-to-wallet transfers. It uses PostgreSQ
 
 ## API
 
+Base URL: `http://localhost:9090`
+
 ### Create a transfer
 
 `POST /transfers`
@@ -15,6 +17,17 @@ A Spring Boot service for reliable wallet-to-wallet transfers. It uses PostgreSQ
   "toWalletId": "wallet_2",
   "amount": 100.00
 }
+```
+
+```bash
+curl -X POST http://localhost:9090/transfers \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "idempotencyKey": "transfer-2026-0001",
+    "fromWalletId": "wallet_1",
+    "toWalletId": "wallet_2",
+    "amount": 100.00
+  }'
 ```
 
 Example successful response:
@@ -35,6 +48,55 @@ Example successful response:
 
 The amount must be positive with at most four decimal places, wallet IDs must be present, and source and destination wallets must differ.
 
+### Get a wallet balance
+
+`GET /wallets/{walletId}`
+
+```bash
+curl http://localhost:9090/wallets/wallet_1
+```
+
+Example response:
+
+```json
+{
+  "walletId": "wallet_1",
+  "balance": 900.0000
+}
+```
+
+### Get transfer history
+
+`GET /wallets/{walletId}/transfers?limit={limit}&cursor={cursor}`
+
+`limit` is optional: it defaults to `50` and must be between `1` and `100`. `cursor` is optional; pass the previous response's `nextCursor` to fetch the next page.
+
+```bash
+curl 'http://localhost:9090/wallets/wallet_1/transfers?limit=10'
+```
+
+Example response:
+
+```json
+{
+  "transfers": [
+    {
+      "transferId": "f8c717d6-193d-4f51-bd0f-8ee2d7a1ca46",
+      "fromWalletId": "wallet_1",
+      "toWalletId": "wallet_2",
+      "amount": 100.0000,
+      "status": "PROCESSED",
+      "failureReason": null,
+      "createdAt": "2026-08-30T12:00:00Z",
+      "completedAt": "2026-08-30T12:00:00Z"
+    }
+  ],
+  "nextCursor": "<cursor-for-next-page>"
+}
+```
+
+When `nextCursor` is `null`, there are no further results.
+
 ## Transfer outcomes
 
 | Outcome | Result |
@@ -42,7 +104,7 @@ The amount must be positive with at most four decimal places, wallet IDs must be
 | Sufficient funds | `PROCESSED`; balances and two ledger entries are committed. |
 | Insufficient funds | `FAILED` with `INSUFFICIENT_FUNDS`; balances and ledger remain unchanged. |
 | Unknown wallet | HTTP 404 with `WALLET_NOT_FOUND`. |
-| Invalid request | HTTP 400 with validation details. |
+| Invalid `POST /transfers` request | HTTP 400 with validation details. |
 | Reused key, different payload | HTTP 409 with `IDEMPOTENCY_CONFLICT`. |
 
 ## Idempotency
